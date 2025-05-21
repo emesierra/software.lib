@@ -66,6 +66,7 @@ def index() -> rx.Component:
                 margin_top="1rem",
                 style={"cursor": "pointer", "textDecoration": "underline"}
             ),
+            
         ),
         height="100vh",
     )
