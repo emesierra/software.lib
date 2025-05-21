@@ -14,7 +14,6 @@ class LoginState(rx.State):
     usuario: str = ""
     contrasena: str = ""
     mensaje: str = ""
-    show_password: bool = False  # <-- Estado para mostrar u ocultar contraseña
 
     @rx.event
     def set_usuario(self, valor: str):
@@ -23,10 +22,6 @@ class LoginState(rx.State):
     @rx.event
     def set_contrasena(self, valor: str):
         self.contrasena = valor
-
-    @rx.event
-    def toggle_password(self):
-        self.show_password = not self.show_password
 
     @rx.event
     def login(self):
@@ -39,11 +34,10 @@ class LoginState(rx.State):
         else:
             self.mensaje = "❌ Usuario o contraseña incorrectos."
 
-
 def index() -> rx.Component:
     return rx.center(
         rx.vstack(
-            rx.heading("Login Biblioteca", size="3"),  # Ojo: usar "3" como string válido
+            rx.heading("Login Biblioteca", size="3"),
             rx.input(
                 placeholder="Usuario",
                 value=LoginState.usuario,
@@ -51,25 +45,25 @@ def index() -> rx.Component:
                 width="300px",
                 margin_bottom="0.5rem"
             ),
-            rx.hstack(  # Contenedor horizontal para input y botón
-                rx.input(
-                    placeholder="Contraseña",
-                    type_=rx.cond(LoginState.show_password, "text", "password"),
-                    value=LoginState.contrasena,
-                    on_change=LoginState.set_contrasena,
-                    width="240px",
-                ),
-                rx.button(
-                    rx.cond(LoginState.show_password, "🙈", "👁️"),
-                    on_click=LoginState.toggle_password,
-                    size="1",
-                    variant="ghost",
-                ),
-                spacing="2",
+            rx.input(
+                placeholder="Contraseña",
+                type_="password",
+                value=LoginState.contrasena,
+                on_change=LoginState.set_contrasena,
+                width="300px",
                 margin_bottom="0.5rem"
             ),
             rx.button("Ingresar", on_click=LoginState.login, width="300px"),
             rx.text(LoginState.mensaje, color="red", margin_top="1rem"),
+
+            # Aquí el link para ir a la página de registro
+            rx.link(
+                "or, sign up",
+                on_click=rx.redirect("/registro"),
+                color="grey",
+                margin_top="1rem",
+                style={"cursor": "pointer", "textDecoration": "underline"}
+            ),
         ),
         height="100vh",
     )
