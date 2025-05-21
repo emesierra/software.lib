@@ -1,76 +1,105 @@
 import reflex as rx
 import mysql.connector
+from datetime import date
 
-conexion = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="bloq1234",
-    database="bdmysql"
-)
-cursor = conexion.cursor()
+def get_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="bloq1234",
+        database="bdmysql",
+        port=3306
+    )
 
 class DevolucionState(rx.State):
-    usuario: str = ""
     id_libro: str = ""
     mensaje: str = ""
+    usuario: str = "usuario_demo"  # ⚠️ Temporal
 
     @rx.var
-    def usuario_var(self) -> str:
-        return self.usuario
+    def color_mensaje(self) -> str:
+        return "green.600" if self.mensaje.startswith("✅") else "red.600"
 
-    @rx.var
-    def id_libro_var(self) -> str:
-        return self.id_libro
+    async def devolver_libro(self):
+        if not self.id_libro.isdigit():
+            self.mensaje = "❌ El ID del libro debe ser un número."
+            return
 
-    @rx.var
-    def mensaje_var(self) -> str:
-        return self.mensaje
+        conexion = None
+        cursor = None
 
-    @rx.event
-    def set_usuario(self, valor: str):
-        self.usuario = valor
+        try:
+            conexion = get_connection()
+            cursor = conexion.cursor()
 
-    @rx.event
-    def set_id_libro(self, valor: str):
-        self.id_libro = valor
+            # Verificar si hay préstamo activo
+            cursor.execute("""
+                SELECT p.id, l.titulo FROM prestamos p
+                JOIN libros l ON p.id_libro = l.id
+                WHERE p.id_libro = %s AND p.usuario = %s AND p.devuelto = FALSE
+            """, (self.id_libro, self.usuario))
 
-    @rx.event
-    def devolver_libro(self):
-        query = "SELECT * FROM prestamos WHERE usuario=%s AND id_libro=%s AND devuelto=0"
-        cursor.execute(query, (self.usuario, self.id_libro))
-        prestamo = cursor.fetchone()
+            resultado = cursor.fetchone()
 
-        if prestamo:
-            update_query = "UPDATE prestamos SET devuelto=1 WHERE usuario=%s AND id_libro=%s AND devuelto=0"
-            cursor.execute(update_query, (self.usuario, self.id_libro))
-            conexion.commit()
-            self.mensaje = "✅ Libro devuelto exitosamente."
-        else:
-            self.mensaje = "❌ No se encontró un préstamo activo con esos datos."
+            if not resultado:
+                self.mensaje = "❌ No hay préstamo activo para este usuario y libro."
+            else:
+                id_prestamo, titulo = resultado
+                hoy = date.today()
+
+                # Actualizar estado del préstamo y del libro
+                cursor.execute("""
+                    UPDATE prestamos
+                    SET devuelto = TRUE, fecha_devolucion = %s
+                    WHERE id = %s
+                """, (hoy, id_prestamo))
+
+                cursor.execute("UPDATE libros SET disponible = TRUE WHERE id = %s", (self.id_libro,))
+                conexion.commit()
+                self.mensaje = f"✅ Libro '{titulo}' devuelto exitosamente el {hoy}."
+
+        except mysql.connector.Error as err:
+            self.mensaje = f"❌ Error en la base de datos: {err}"
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
 
 @rx.page(route="/devolucion", title="Devolver Libro")
-def devolucion(state: DevolucionState) -> rx.Component:
+def devolucion() -> rx.Component:
     return rx.center(
         rx.vstack(
-            rx.heading("Devolver Libro", size="3"),
+            rx.heading("📚 Devolver Libro", size="5"),
             rx.input(
-                placeholder="Nombre del usuario",
-                value=state.usuario,
-                on_change=state.set_usuario,
+                placeholder="Ingrese el ID del libro",
+                on_change=DevolucionState.set_id_libro,
+                value=DevolucionState.id_libro,
                 width="300px"
             ),
-            rx.input(
-                placeholder="ID del libro",
-                value=state.id_libro,
-                on_change=state.set_id_libro,
-                width="300px"
+            rx.button(
+                "Devolver",
+                on_click=DevolucionState.devolver_libro,
+                color_scheme="green"
             ),
-            rx.button("Devolver", on_click=state.devolver_libro, width="300px"),
-            rx.text(state.mensaje, margin_top="1rem", color="green"),
-            rx.link("Volver al menú", href="/menu", color="blue", margin_top="1rem"),
+            rx.text(
+                DevolucionState.mensaje,
+                color=DevolucionState.color_mensaje,
+                font_weight="bold"
+            ),
+            spacing="4",
+            padding="6",
+            box_shadow="md",
+            border_radius="xl",
+            bg="white",
+            width="100%",
+            max_width="400px"
         ),
-        height="100vh"
+        min_height="100vh",
+        bg="gray.50"
     )
 
 app = rx.App()
 app.add_page(devolucion)
+
