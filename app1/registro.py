@@ -49,36 +49,48 @@ class RegistroState(rx.State):
 @rx.page(route='/registro', title='Registrarse')
 def registro() -> rx.Component:
     return rx.center(
-        rx.vstack(
-            rx.heading("Registro Biblioteca", size="3"),
-            rx.input(
-                placeholder="Usuario",
-                value=RegistroState.usuario,
-                on_change=RegistroState.set_usuario,
-                width="300px",
-                margin_bottom="0.5rem"
+        rx.box(
+            rx.vstack(
+                rx.heading("Registro Biblioteca", size="5", color="black"),
+                rx.input(
+                    placeholder="Usuario",
+                    value=RegistroState.usuario,
+                    on_change=RegistroState.set_usuario,
+                    width="300px",
+                    margin_bottom="0.5rem",
+                    color="black"
+                ),
+                rx.input(
+                    placeholder="Contraseña",
+                    type_="password",
+                    value=RegistroState.contrasena,
+                    on_change=RegistroState.set_contrasena,
+                    width="300px",
+                    margin_bottom="0.5rem",
+                    color="black"
+                ),
+                rx.input(
+                    placeholder="Confirmar contraseña",
+                    type_="password",
+                    value=RegistroState.confirmar_contrasena,
+                    on_change=RegistroState.set_confirmar_contrasena,
+                    width="300px",
+                    margin_bottom="0.5rem",
+                    color="black"
+                ),
+                rx.button("Registrar", on_click=RegistroState.registrar, width="300px"),
+                rx.text(RegistroState.mensaje, color="red", margin_top="1rem"),
+                rx.link("Volver al login", href="/", color="blue", margin_top="1rem"),
             ),
-            rx.input(
-                placeholder="Contraseña",
-                type_="password",
-                value=RegistroState.contrasena,
-                on_change=RegistroState.set_contrasena,
-                width="300px",
-                margin_bottom="0.5rem"
-            ),
-            rx.input(
-                placeholder="Confirmar contraseña",
-                type_="password",
-                value=RegistroState.confirmar_contrasena,
-                on_change=RegistroState.set_confirmar_contrasena,
-                width="300px",
-                margin_bottom="0.5rem"
-            ),
-            rx.button("Registrar", on_click=RegistroState.registrar, width="300px"),
-            rx.text(RegistroState.mensaje, color="red", margin_top="1rem"),
-            rx.link("Volver al login", href="/", color="blue", margin_top="1rem"),
+            background_color="#FFFFFF",  # Azul oscuro
+            border_radius="16px",
+            padding="32px",
+            shadow="lg",
+            width="350px",
+
         ),
-        height="100vh",
+        height="100vh",  # Centrado vertical
+        background="#011E26"
     )
 
 app = rx.App()
