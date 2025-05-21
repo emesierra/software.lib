@@ -38,37 +38,48 @@ class LoginState(rx.State):
 
 def index() -> rx.Component:
     return rx.center(
-        rx.vstack(
-            rx.heading("Login Biblioteca", size="3"),
-            rx.input(
-                placeholder="Usuario",
-                value=LoginState.usuario,
-                on_change=LoginState.set_usuario,
-                width="300px",
-                margin_bottom="0.5rem"
-            ),
-            rx.input(
-                placeholder="Contraseña",
-                type_="password",
-                value=LoginState.contrasena,
-                on_change=LoginState.set_contrasena,
-                width="300px",
-                margin_bottom="0.5rem"
-            ),
-            rx.button("Ingresar", on_click=LoginState.login, width="300px"),
-            rx.text(LoginState.mensaje, color="red", margin_top="1rem"),
+        rx.box(
+            rx.vstack(
+                rx.heading("Entrada Biblioteca", size="5", color="black"),
+                rx.input(
+                    placeholder="Usuario",
+                    value=LoginState.usuario,
+                    on_change=LoginState.set_usuario,
+                    width="300px",
+                    margin_bottom="0.5rem",
+                    color="black"
+                ),
+                rx.input(
+                    placeholder="Contraseña",
+                    type_="password",
+                    value=LoginState.contrasena,
+                    on_change=LoginState.set_contrasena,
+                    width="300px",
+                    margin_bottom="0.5rem",
+                    color="black"
+                ),
+                rx.button("Ingresar", on_click=LoginState.login, width="300px"),
+                rx.text(LoginState.mensaje, color="red", margin_top="1rem"),
 
-            
-            rx.link(
-                "or, sign up",
-                on_click=rx.redirect("/registro"),
-                color="grey",
-                margin_top="1rem",
-                style={"cursor": "pointer", "textDecoration": "underline"}
+                
+                rx.link(
+                    "or, sign up",
+                    on_click=rx.redirect("/registro"),
+                    color="#0059FF",
+                    margin_top="1rem",
+                    style={"cursor": "pointer", "textDecoration": "underline"}
+                ),
+                
+        
             ),
-            
+            background_color="#FFFFFF",  # Azul oscuro
+            border_radius="16px",
+            padding="32px",
+            shadow="lg",
+            width="350px", 
         ),
-        height="100vh",
+        height="100vh",  # Centrado vertical
+        background="#011E26" 
     )
 
 app = rx.App()
