@@ -1,7 +1,7 @@
 import reflex as rx
 import mysql.connector
 
-# Conexión global (ideal usar pool o manejar bien conexión)
+
 conexion = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -30,7 +30,9 @@ class LoginState(rx.State):
         resultado = cursor.fetchone()
 
         if resultado:
+            
             self.mensaje = f"✅ Bienvenido {self.usuario}!"
+            return rx.redirect("/menu")
         else:
             self.mensaje = "❌ Usuario o contraseña incorrectos."
 
@@ -56,7 +58,7 @@ def index() -> rx.Component:
             rx.button("Ingresar", on_click=LoginState.login, width="300px"),
             rx.text(LoginState.mensaje, color="red", margin_top="1rem"),
 
-            # Aquí el link para ir a la página de registro
+            
             rx.link(
                 "or, sign up",
                 on_click=rx.redirect("/registro"),
